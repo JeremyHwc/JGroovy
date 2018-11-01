@@ -164,3 +164,52 @@
         groovy中的数据结构：列表，映射，范围用法
         groovy中的方法，类等面向对象相关讲解
         groovy中对普通文件，xml，json处理，另外还可连接数据库
+
+## 第6章 Gradle生命周期探索
+    gradle基本概念讲解
+    gradle优势
+    gradle执行流程讲解
+    
+    gradle是什么，能做什么  主要是用来构建应用程序
+    
+    gradle组成：
+        （1）groovy核心语法
+        （2）build script block
+        （3）gradle api
+        
+    gradle优势：相比于ant、maven
+        （1）灵活性
+        （2）粒度性
+        （3）扩展性
+        （4）兼容性，兼容了ant、maven
+        
+    gradle生命周期：
+        （1）Initialization初始化阶段----解析整个工程中所有Project,构建所有的Project对应的project对象
+        （2）Configuration配置阶段 ---- 解析所有的projets对象的task，构建好所有task的拓扑图
+        （3）Execution执行阶段 ---- 执行具体的tak及其依赖task
+        
+        疑问：如何监听gradle的生命周期？
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
