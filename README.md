@@ -6,6 +6,7 @@
         DSL与通用编程语言的区别：
             解决某一特定领域的问题
         核心思想：求专不求全，解决特定问题
+        
     groovy讲解之groovy初探
         是一种基于JVM的敏捷开发语言
         结合了Python、Ruby和Smalltalk的许多强大的特性
