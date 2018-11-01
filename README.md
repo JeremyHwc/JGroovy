@@ -189,11 +189,156 @@
         （3）Execution执行阶段 ---- 执行具体的tak及其依赖task
         
         疑问：如何监听gradle的生命周期？
+        答疑：settings.gradle里面会有限执行初始化，而后执行项目build.gradle里面的一下三个方法，但是经过检验，
+              beforeEvaluate()并没有打印出任何东西，存疑.....................
         
+        /**
+         * 配置阶段开始前的监听回调
+         */
+        this.beforeEvaluate {
+            println 'beforeEvaluate...配置阶段开始前...'
+        }
+        
+        /**
+         * 配置阶段完成以后的回调
+         */
+        this.afterEvaluate {
+            println 'afterEvaluate...配置阶段执行完毕'
+        }
+        
+        /**
+         * gradle执行完毕后的回调监听
+         */
+        this.gradle.buildFinished {
+            println '执行阶段执行完毕'
+        }
+        
+        /**
+         * 等同于beforeEvaluate
+         */
+        this.gradle.beforeProject {
+            println 'beforeProject...配置阶段开始前...'
+        }
+        
+        /**
+         * 等同于afterEvaluate
+         */
+        this.gradle.afterProject {
+            println 'afterProject...配置阶段执行完毕'
+        }
+        
+        /**
+         * 添加监听
+         */
+        this.gradle.addBuildListener(new BuildListener() {
+            @Override
+            void buildStarted(Gradle gradle) {
+        
+            }
+        
+            @Override
+            void settingsEvaluated(Settings settings) {
+        
+            }
+        
+            @Override
+            void projectsLoaded(Gradle gradle) {
+        
+            }
+        
+            @Override
+            void projectsEvaluated(Gradle gradle) {
+        
+            }
+        
+            @Override
+            void buildFinished(BuildResult result) {
+        
+            }
+        })
+        
+        //this.gradle.addListener()
+        this.gradle
+        .addProjectEvaluationListener(new ProjectEvaluationListener() {
+            @Override
+            void beforeEvaluate(Project project) {
+        
+            }
+        
+            @Override
+            void afterEvaluate(Project project, ProjectState state) {
+        
+            }
+        })
+        
+    本章必知必会
+        了解gradle是什么，能做什么
+        明白gradle相较于以前的构建工具有事在哪里
+        掌握gradle的声明周期阶段
+        
+## 第7章 Gradle核心之Project详解及实战（注：gradle编程框架中最重要概念）
+    本章概述
+        深入了解Project
+        Project核心API讲解
+        Project核心API实战
+        
+        注意：在Android中，Root Project和其下面的module，对于gradle来讲，其地位是平等的，都是看成project
+              Root Project用于管理所有的子project
+              子project对于一个输出，app的project对应apk的输出，library module对应于aar的输出
     
+    Project API组成
+        （1）gradle声明周期api
+        （2）project相关api
+        （3）task相关api
+        （4）属性相关api
+        （5）file相关api
+        （6）其他api
+        
+        1.project相关api
+        
+        root project ----> getSubProject() 获取子project
+        sub project  ----> getParent() 获取父project
+        
+        getAllProjects()获取当前project及其所有sub project 
+        
+        问题：如何能够在root project里面通过api去配置sub project？
+        答疑：通过project() api可以配置所有sub project里面的配置
+        案例：
+            project('app'){Project project->
+                apply plugin:'com.android.application'
+                group 'com.tencent'
+                version '1.0.0-release'
+                dependencies {
+            
+                }
+            
+                android{
+            
+                }
+            }
+            
+        作用：所有project都需要相同的一个配置，可以抽取到root project进行配置
+        
+        疑问：如何为所有的工程都配置，包括root project
+        案例：
+            allprojects {
+                repositories {
+                    google()
+                    jcenter()
+                }
+            }
     
+        疑问：如何为所有sub project配置，不包括root project
+        案例：
+            subprojects {
+                /*为所有的为library的库配置发布到maven的配置*/
+                Project project->
+                    if (project.plugins.hasPlugin('com.android.library')){
+                        apply from:'../publishToMaven.gradle'
+                    }
+            }
     
-    
+        作业：将合适的配置运用project(),allProjects(),subProjects()配置到合适的位置
     
     
     
