@@ -340,13 +340,147 @@
             }
     
         作业：将合适的配置运用project(),allProjects(),subProjects()配置到合适的位置
+        
+        定义扩展属性：
+            1.在build.gradle文件里面定义
+                ext{
+                    compileSdkVersion=27
+                }
+            2.在gradle.properties里面定义属性
+                注：在这个里面定义属性就只能定义key = value的形式，在build.gradle里面可以定义map等类型
+                在gradle.properties里面定义了属性 isLoadTest = true
+                在setting.gradle里面，我们使用该属性来控制是否引入某个module或lib
+                if(hasProperty('isLoadTest')?isLoadTest.toBoolean():false){
+                    include ':moduleName'
+                }
+            作业：用自定义的扩展属性，改造自己的工程
+        
+        project文件相关api：
+            1.路径获取相关api
+                //获取跟工程路径
+                println "the root file path is:"+getRootDir().absolutePath
+                //获取build路径
+                println "the build file path is: "+getBuildDir().absolutePath
+                //获取工程路径
+                println "the project file path is:"+getProjectDir().absolutePath
+            2.文件操作相关api
+                文件定位：
+                    println getContent('build.gradle')
+                    def getContent(String path){
+                        try{
+                    //        file方法相对于当前的project工程开始查找
+                            def file = file(path)//定位一个文件
+                    //        def fileCollection = files(path1, path2)//定位多个文件，参数为路径数组
+                            return file.text
+                        }catch(Exception e){
+                            println 'file not found。。。'
+                        }
+                        return null
+                    
+                    }
+                文件拷贝：
+                    copy{
+                        from file('JGradle.jks')
+                        into getRootProject().getBuildDir()
+                    
+                    }
+                    
+                    //将build/outputs/apk/文件夹拷贝到build/apk/
+                    copy {
+                        from file('build/outputs/apk/')
+                        into getRootProject().getBuildDir().path + '/apk/'
+                        exclude {}//控制排除操作
+                        rename {}//重命名操作
+                    }
+                
+                文件树遍历：
+                    fileTree('build/outputs/apk/') {
+                        FileTree fileTree ->/*文件树*/
+                            fileTree.visit {
+                                FileTreeElement element ->/*文件树中的每个结点*/
+                                    println "the file name is:" + element.file.name
+                    
+                                    copy {/*遍历文件夹同时复制文件*/
+                                        from element.file
+                                        into getRootProject().getBuildDir().path+'/test/'
+                                    }
+                            }
+                    }
+            
     
+        其他api
+        
+            Project build.gradle里面的配置
+                buildscript {/*依赖配置核心部分*/
+                    /*配置工程的仓库地址*/
+                    repositories {
+                    RepositoryHandler repositoryHandler ->
+                        repositoryHandler.google()
+                        repositoryHandler.jcenter()
+                        repositoryHandler.mavenCentral()
+                        repositoryHandler.mavenLocal()
+                        repositoryHandler.ivy {}
+                        repositoryHandler.maven {
+                            name ''
+                            url ''/*公司内部的maven地址*/
+                            credentials {
+                                username = 'admin'
+                                password = 'admin123'
+                            }
+                        }
+                    }
+                
+                    /*配置工程的“插件”依赖地址*/
+                    dependencies {
+                        classpath 'com.android.tools.build:gradle:3.1.2'
+                    }
+                }
+            App Module或Library module里面的配置
+                /*为应用程序添加第三方库依赖*/
+                dependencies {
+                    implementation fileTree(dir: 'libs', include: ['*.jar'])
+                    implementation 'com.android.support:appcompat-v7:27.1.1'
+                    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
+                    testImplementation 'junit:junit:4.12'
+                    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+                    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+                
+                    implementation() {
+                        exclude module: 'support-v4'/*排除依赖*/
+                        exclude group: 'com.support.appcompat-v4'/*排除依赖*/
+                        transitive true/*设置为true表示本工程可以引用该库依赖的库，false禁止传递依赖*/
+                    }
+                }
+                
+                compile或implementatin或api会将第三方依赖的资源文件和class文件打包到最终的输出文件
+                provided使用场景1：只会在编译时期起作用，比如tinker，在编译时生成Application类，打包时期就不会将该库打包进去
+                provided使用场景2：当前工程是一个库工程，如果我们的库工程中需要使用okhttp库，我们同时又在主工程中引用了okhttp，
+                                  那么我们在库工程中就可以使用provided，在编译时通过，最终使用的时候共用主工程的okhttp即可
+                
     
-    
-    
-    
-    
-    
+        外部命令的执行：
+            疑问：如何将我们生成的apk拷贝到指定的目录中，这个时候就需要结合外部命令
+            答疑：如下代码执行失败？待解读
+                task apkCopy {//通过闭包配置task需要执行的任务
+                    doLast {//在gradle的执行阶段去执行
+                        def path = this.buildDir.path + '/outputs/apk/debug/app-debug.apk'
+                        def desPath ="D:\\EVDownload"
+                        def command = "mv -f  ${path} ${desPath}}"
+                        exec {
+                            try {
+                                executable 'bash'
+                                args '-c', command
+                                println 'the command is execute success.'
+                            } catch (GradleException e) {
+                                println 'the command is execute failed.'
+                            }
+                        }
+                    }
+                }
+        必知必会：
+            （1）Project的定义，组织结构以及作用
+            （2）掌握gradle、核心Api在实际中的使用
+            
     
     
     
